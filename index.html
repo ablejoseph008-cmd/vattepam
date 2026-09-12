@@ -1,1 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070c16">
+  <title>Zero Contact Cricket - The Impossible Batting Simulator</title>
+  <meta name="description" content="A hilarious 3D comedy cricket game where the ball actively defies physics and avoids the bat with Malayalam troll commentary!">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+  <div id="appContainer">
+    <!-- Broadcast Top Bar -->
+    <header id="broadcastHeader">
+      <div class="brand-badge">
+        <div class="live-dot"></div>
+        <div>
+          <div class="brand-title" id="playerBadgeTitle">SANJU (IND)</div>
+          <div class="brand-sub">BAT-TO-BALL PROXIMITY: 0.00%</div>
+        </div>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill">
+          <span class="stat-lbl">AIR DISPLACED</span>
+          <span class="stat-val" id="moleculesVal">0 B</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-lbl">BALLS LEFT</span>
+          <span class="stat-val"><span id="ballsVal">0</span>/6</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-lbl">TARGET</span>
+          <span class="stat-val" id="targetVal">1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main id="gameArea">
+      <!-- 3D Canvas Viewport -->
+      <div id="viewportContainer">
+        <canvas id="cricketCanvas"></canvas>
+
+        <!-- Roast Banner Popup (Malayalam Troll Commentary) -->
+        <div id="roastBanner">
+          <div id="roastTag">🔥 COMMENTARY ROAST</div>
+          <div id="roastText">ബാറ്റ് വീശിയത് വേറെ, ബോൾ പോയത് വേറെ 😂</div>
+        </div>
+
+        <!-- UltraEdge DRS Parody Modal -->
+        <div id="drsModal">
+          <div class="drs-header">
+            <span>⚡ ULTRA-EDGE™ DECISION SYSTEM</span>
+            <span class="drs-badge">FLATLINE</span>
+          </div>
+          <canvas id="drsWaveCanvas" width="380" height="48"></canvas>
+          <div id="drsReviewText">THIRD UMPIRE: "Confirmed clean miss. Distance between bat and ball: 3 business days."</div>
+        </div>
+
+        <!-- On-Screen Controls for Mobile / Touch -->
+        <div id="mobileControls">
+          <div class="dpad-group">
+            <button class="action-btn dpad-btn" id="btnMoveLeft" aria-label="Move Left">◀</button>
+            <button class="action-btn dpad-btn" id="btnMoveRight" aria-label="Move Right">▶</button>
+          </div>
+          <div class="action-group">
+            <button class="action-btn" id="bowlBtn">⚡ BOWL</button>
+            <button class="action-btn swing-btn" id="swingBtn">🏏 SWING</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Control Panel -->
+      <aside id="sidePanel">
+        <!-- Live Score & Ball Tracker -->
+        <div class="panel-card">
+          <div class="panel-title">📊 INNINGS SCOREBOARD</div>
+          <div class="score-box">
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">RUNS SCORED</div>
+              <div class="score-num" id="runsVal">0</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">REQUIRED RUNS</div>
+              <div class="score-num" style="color: var(--accent-red);">1</div>
+            </div>
+          </div>
+          <div class="balls-tracker-row" id="ballsTracker">
+            <!-- Populated dynamically: [0, 0, 0, 0, 0, 0] -->
+          </div>
+        </div>
+
+        <!-- Rage Meter -->
+        <div class="panel-card">
+          <div class="panel-title">😤 BATSMAN RAGE METER</div>
+          <div class="rage-container">
+            <div class="rage-header">
+              <span style="color: var(--text-muted);">കാറ്റ് വെട്ടൽ ലെവൽ:</span>
+              <span id="ragePercent" style="color: var(--accent-red); font-family: var(--font-mono);">0%</span>
+            </div>
+            <div class="rage-bar">
+              <div id="rageFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Useless Bat Skins -->
+        <div class="panel-card">
+          <div class="panel-title">🪓 CHOOSE YOUR WEAPON</div>
+          <div class="bat-grid">
+            <button class="bat-btn active" data-skin="willow">🏏 Willow Bat</button>
+            <button class="bat-btn" data-skin="chicken">🐔 Rubber Chicken</button>
+            <button class="bat-btn" data-skin="hole">🕳️ Giant Hole Bat</button>
+            <button class="bat-btn" data-skin="noodle">🍜 Wet Noodle</button>
+            <button class="bat-btn" data-skin="toothpick">🥢 Toothpick</button>
+          </div>
+        </div>
+
+        <!-- Jersey & Controls -->
+        <div class="panel-card">
+          <div class="panel-title">👕 TEAM JERSEY</div>
+          <select id="teamSelect">
+            <option value="india">🇮🇳 Team Blue (India)</option>
+            <option value="australia">🇦🇺 Team Gold (Australia)</option>
+            <option value="england">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Team Sky (England)</option>
+            <option value="pakistan">🇵🇰 Team Green (Pakistan)</option>
+            <option value="south_africa">🇿🇦 Team Emerald (South Africa)</option>
+            <option value="west_indies">🌴 Team Maroon (West Indies)</option>
+            <option value="new_zealand">🇳🇿 Team Black (New Zealand)</option>
+          </select>
+
+          <button id="btnOpenSetup" class="action-btn" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 8px 12px;">⚙️ CHANGE PLAYER / TARGET</button>
+
+          <div style="margin-top: 12px;">
+            <div class="key-row"><span>Move Bat</span><span class="key-badge">&larr; / &rarr; or A / D</span></div>
+            <div class="key-row"><span>Swing Bat</span><span class="key-badge">SPACE</span></div>
+            <div class="key-row"><span>Face Next Ball</span><span class="key-badge">ENTER</span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Starting Match Setup Modal -->
+  <div id="setupModal" class="modal-overlay active">
+    <div class="setup-card">
+      <div class="setup-badge">🏏 T20 PREMIER TROLL LEAGUE</div>
+      <h2 class="setup-title">MATCH REGISTRATION</h2>
+      <p class="setup-sub">Enter your details to begin the impossible chase</p>
+
+      <form id="setupForm">
+        <div class="form-group">
+          <label class="form-label" for="inputPlayerName">YOUR NAME</label>
+          <input type="text" id="inputPlayerName" class="form-input" placeholder="Enter your name" value="Sanju" maxlength="20" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputCountry">SELECT YOUR COUNTRY</label>
+          <select id="inputCountry" class="form-input">
+            <option value="india" selected>🇮🇳 India</option>
+            <option value="australia">🇦🇺 Australia</option>
+            <option value="england">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option>
+            <option value="pakistan">🇵🇰 Pakistan</option>
+            <option value="south_africa">🇿🇦 South Africa</option>
+            <option value="west_indies">🌴 West Indies</option>
+            <option value="new_zealand">🇳🇿 New Zealand</option>
+            <option value="sri_lanka">🇱🇰 Sri Lanka</option>
+            <option value="bangladesh">🇧🇩 Bangladesh</option>
+            <option value="afghanistan">🇦🇫 Afghanistan</option>
+            <option value="usa">🇺🇸 United States</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputTargetRuns">TARGET RUNS TO CHASE</label>
+          <input type="number" id="inputTargetRuns" class="form-input" value="1" min="1" max="999" required>
+          <div class="target-presets">
+            <button type="button" class="preset-btn active" data-val="1">1 Run</button>
+            <button type="button" class="preset-btn" data-val="6">6 Runs</button>
+            <button type="button" class="preset-btn" data-val="18">18 Runs</button>
+            <button type="button" class="preset-btn" data-val="36">36 Runs</button>
+            <button type="button" class="preset-btn" data-val="50">50 Runs</button>
+          </div>
+          <div class="form-hint">⚠️ Scientific Fact: Regardless of target chosen, you will score 0 runs 😂</div>
+        </div>
+
+        <button type="submit" id="btnStartMatch" class="retry-btn" style="margin-top: 14px;">ENTER THE ARENA 🚀</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Official Certificate of Uselessness Modal -->
+  <div id="certificateModal" class="modal-overlay">
+    <div class="cert-card">
+      <div class="cert-stamp">OFFICIAL TROLL CERTIFICATE</div>
+      <div class="cert-title">CLINICALLY USELESS</div>
+      <div class="cert-sub" id="certPlayerName">Sanju (India)</div>
+      <div class="cert-sub" style="margin-top:-10px;">“ഇത്രയും confidence-ോടെ miss ചെയ്യുന്നത് ഒരു പ്രത്യേക കഴിവാണ് 💀”</div>
+
+      <table class="cert-table">
+        <tr><td>Target Runs Needed:</td><td id="certTarget">1</td></tr>
+        <tr><td>Runs Actually Scored:</td><td id="certRuns">0</td></tr>
+        <tr><td>Deliveries Faced:</td><td id="certBalls">6/6</td></tr>
+        <tr><td>Air Molecules Displaced:</td><td id="certMolecules">8.42 Billion</td></tr>
+        <tr><td>Rage Level Reached:</td><td id="certRage">100%</td></tr>
+        <tr><td>Bat-to-Ball Contact:</td><td style="color: var(--accent-red);">0.000%</td></tr>
+      </table>
+
+      <button class="retry-btn" id="retryBtn">TRY AGAIN (YOU STILL WON'T HIT IT) 😂</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="audio.js"></script>
+  <script src="stadium.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
